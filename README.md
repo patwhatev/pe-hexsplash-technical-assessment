@@ -64,3 +64,37 @@ npx expo prebuild
 ```
 npx expo run:android
 ```
+
+
+# Extra Info for Feeld
+
+### Original Task: 
+Build a React Native Sample project and write automation tests using your favorite framework.
+This exercise meant to let you show your expertise in React Native and Automation Testing. This work is similar to what you can expect as a day to day work. Use LLMs/AI Assistants as you normally would.
+
+#### Scenario
+You have a react native application that you need to test using automation tests thoroughly. If you
+can, create a reasonably sized application (min 5 screens). If you are pressed for time pick an app
+from https://github.com/ReactNativeNews/React-Native-Apps 
+
+- Create a repository with automation tests for your (chosen OSS react native app)
+- Add a markdown file with following details
+	- React Native project
+	- Describe how to setup and run the react native project
+	- Briefly overview of the application functionality and which areas you chose to test using automation framework
+- Automation Tests
+	- Frameworks considered
+	- Selected framework for automation test and rationale (pros/and 	   cons)
+	- How to run automation tests
+	- Improvements and next steps for the automation
+- AI Usage & Judgement
+	- Describe how you used AI
+	- If yes
+		- Log all the prompts and describe how you reviewed the code.
+		- Where was the AI most helpful ?
+		- Where was the AI least helpful
+	- If no
+		- Why not ?
+- Additional/Bonus work
+	- Using a CI tool for automation tests
+	- Give links to automation run via CI (either GH Actions or some other tool)

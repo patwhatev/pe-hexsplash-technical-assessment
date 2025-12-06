@@ -42,6 +42,7 @@ const Generator = () => {
 			{colorCode.map((color, index) => {
 				const colorCellTestID = `action-color-cell-${index}`;
 				const colorCellHexTextTestID = `action-color-cell-${index}-text`;
+				const colorCellLockTestID = `action-color-cell-${index}-lock`;
 				const colorCellLockIcon = `action-color-cell-${index}-lock-icon`;
 				
 				// NOTE: this is the individual Color cell
@@ -64,6 +65,7 @@ const Generator = () => {
 					<Text testID={colorCellHexTextTestID} style={[styles.text, { color: isColorDark(color) ? "white" : "black" }]}>{color}</Text>
 					{/* Note: Lock icon container */}
 					<Pressable
+						testID={colorCellLockTestID}
 						style={styles.lockContainer}
 						onPress={() =>
 							setLocks((prevLocks) => {

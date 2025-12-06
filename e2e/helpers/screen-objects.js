@@ -147,41 +147,26 @@ export class ColorUtils {
   }
 
   /**
-   * Extract the background color from a color cell element
-   * @param {Detox.IndexableNativeElement} cellElement - The color cell element
-   * @returns {Promise<string>} The background color value
-   */
-  static async getBackgroundColor(cellElement) {
-    const attributes = await cellElement.getAttributes();
-    // Background color is in the style attribute
-    if (attributes.style && attributes.style.backgroundColor) {
-      return attributes.style.backgroundColor;
-    }
-    throw new Error('Unable to extract background color from element');
-  }
-
-  /**
-   * Get both hex text and background color for a color cell
+   * Get hex color text for a color cell
    * @param {PaletteScreen} paletteScreen - The palette screen object
    * @param {number} index - The index of the color cell
-   * @returns {Promise<{hexText: string, backgroundColor: string}>}
+   * @returns {Promise<string>} The hex color code (e.g., "#FF5733")
    */
-  static async getColorCellColors(paletteScreen, index) {
+  static async getColorCellColor(paletteScreen, index) {
     const hexText = await this.getHexFromText(paletteScreen.getColorCellText(index));
-    const backgroundColor = await this.getBackgroundColor(paletteScreen.getColorCell(index));
-    return { hexText, backgroundColor };
+    return hexText;
   }
 
   /**
-   * Get all color cell colors from the palette
+   * Get all color cell hex values from the palette
    * @param {PaletteScreen} paletteScreen - The palette screen object
-   * @returns {Promise<Array<{hexText: string, backgroundColor: string}>>}
+   * @returns {Promise<Array<string>>} Array of hex color codes
    */
   static async getAllColorCellColors(paletteScreen) {
     const colors = [];
     for (let i = 0; i < 5; i++) {
-      const cellColors = await this.getColorCellColors(paletteScreen, i);
-      colors.push(cellColors);
+      const cellColor = await this.getColorCellColor(paletteScreen, i);
+      colors.push(cellColor);
     }
     return colors;
   }
@@ -215,14 +200,6 @@ export class ColorUtils {
     return normalized1 === normalized2;
   }
 
-  /**
-   * Assert that hex text matches background color for a color cell
-   * @param {string} hexText - The hex text from the text element
-   * @param {string} backgroundColor - The background color from the cell element
-   */
-  static assertHexMatchesBackground(hexText, backgroundColor) {
-    expect(this.colorsMatch(hexText, backgroundColor)).toBe(true);
-  }
 }
 
 /**

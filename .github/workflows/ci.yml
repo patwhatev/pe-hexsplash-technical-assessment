@@ -60,6 +60,9 @@ jobs:
           xcrun simctl list devices
           xcrun simctl boot "iPhone 16 Pro" || true
 
+      - name: Install applesimutils
+        run: brew tap wix/brew && brew install applesimutils
+
       - name: Run Detox iOS tests
         run: |
           npx detox test --configuration ios.sim.debug

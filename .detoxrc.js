@@ -9,6 +9,29 @@ module.exports = {
       setupTimeout: 120000
     }
   },
+  artifacts: {
+    rootDir: './e2e/artifacts',
+    plugins: {
+      screenshot: {
+        enabled: true,
+        shouldTakeAutomaticSnapshots: true,
+        keepOnlyFailedTestsArtifacts: true,
+        takeWhen: {
+          testStart: false,
+          testDone: true,
+          appNotReady: true,
+        },
+      },
+      log: {
+        enabled: true,
+        keepOnlyFailedTestsArtifacts: true,
+      },
+      video: {
+        enabled: false, // Set to true if you want video recordings
+        keepOnlyFailedTestsArtifacts: true,
+      },
+    },
+  },
   apps: {
     'ios.debug': {
       type: 'ios.app',

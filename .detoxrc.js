@@ -35,7 +35,9 @@ module.exports = {
   apps: {
     'ios.debug': {
       type: 'ios.app',
-      binaryPath: 'ios/build/Build/Products/Debug-iphonesimulator/HexSplash.app',
+      binaryPath: process.env.CI
+        ? `${process.env.GITHUB_WORKSPACE}/ios/build/Build/Products/Debug-iphonesimulator/HexSplash.app`
+        : 'ios/build/Build/Products/Debug-iphonesimulator/HexSplash.app',
       build: 'xcodebuild -workspace ios/HexSplash.xcworkspace -scheme HexSplash -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build'
     },
     'ios.release': {
@@ -61,7 +63,8 @@ module.exports = {
     simulator: {
       type: 'ios.simulator',
       device: {
-        type: 'iPhone 16 Pro'
+        type: 'iPhone 16 Pro',
+        os: '18.6'
       }
     },
     attached: {

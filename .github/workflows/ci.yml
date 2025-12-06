@@ -10,11 +10,16 @@ on:
       - main
       - develop
 
+# Cancel in-progress runs when a new workflow is triggered
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  # iOS Testing Job
-  ios-test:
-    name: iOS Tests
-    runs-on: macos-latest
+  # Unit Tests - Run first for fast feedback
+  unit-test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -29,43 +34,234 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # TODO: Add ESLint configuration and uncomment below
+      # - name: Run ESLint
+      #   run: npm run lint
+
+      - name: Run Jest unit tests
+        run: npm test -- --coverage --watchAll=false
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: ./coverage
+          retention-days: 7
+
+  # iOS Testing Job - Temporarily run independently while debugging
+  ios-test:
+    name: iOS Tests
+    runs-on: macos-15  # macOS 15 required for iOS 18.x simulator support
+    # needs: unit-test  # TODO: Re-enable once iOS tests are stable
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache Expo Prebuild
+        id: cache-prebuild
+        uses: actions/cache@v4
+        with:
+          path: |
+            ios
+            android
+          key: ${{ runner.os }}-prebuild-${{ hashFiles('package-lock.json', 'app.json') }}
+          restore-keys: |
+            ${{ runner.os }}-prebuild-
+
       - name: Generate native directories
+        if: steps.cache-prebuild.outputs.cache-hit != 'true'
         run: npx expo prebuild --clean
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.2'
-          bundler-cache: true
-          working-directory: ios
+          # No bundler-cache: expo prebuild doesn't create a Gemfile
+          # CocoaPods is managed separately via pod install
+
+      - name: Cache CocoaPods
+        id: cache-pods
+        uses: actions/cache@v4
+        with:
+          path: ios/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
 
       - name: Install CocoaPods dependencies
         run: |
           cd ios
           pod install
 
-      # Uncomment when ready to build
-      - name: Build iOS app for testing
+      # PRE-BUNDLING STRATEGY: Generate JS bundle BEFORE xcodebuild
+      # This approach bundles JavaScript without running Metro server
+      # Bundle is generated once and copied into the .app during build
+      - name: Pre-bundle JavaScript for CI
         run: |
+          set -e  # Fail on any error
+
+          echo "Starting JavaScript bundle generation..."
+          mkdir -p dist
+
+          # Bundle JavaScript using React Native CLI with expo-router
+          # Known warnings (expected for Expo projects):
+          # - "Metro config should extend @react-native/metro-config" - False alarm for Expo
+          # - "Missing transform.routerRoot option" - Set in metro.config.js but not read by CLI
+          npx react-native bundle \
+            --platform ios \
+            --dev true \
+            --entry-file ./node_modules/expo-router/entry.js \
+            --bundle-output dist/main.jsbundle \
+            --assets-dest dist/assets \
+            --reset-cache
+
+          echo "JavaScript bundle generated successfully"
+          ls -lh dist/main.jsbundle
+
+      # Disable Xcode's bundling script to avoid duplicate work and verbose logs
+      - name: Configure Xcode to skip bundling
+        run: |
+          cat > ios/.xcode.env.local << 'EOF'
+          # Skip the React Native/Expo bundling script phase
+          # We pre-bundled above, so Xcode doesn't need to do it
+          export SKIP_BUNDLING=1
+          export CI=true
+          EOF
+
+      - name: Build iOS app for testing
+        timeout-minutes: 20
+        run: |
+          set -eo pipefail
+
+          echo "Building iOS app..."
           xcodebuild -workspace ios/HexSplash.xcworkspace \
             -scheme HexSplash \
             -configuration Debug \
             -sdk iphonesimulator \
             -derivedDataPath ios/build \
+            -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.6' \
+            CODE_SIGNING_ALLOWED=NO \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            SKIP_BUNDLING=1 \
             build-for-testing
 
-      # Uncomment when ready to run Detox tests
-      - name: Setup iOS Simulator
+          echo "✓ Build completed successfully"
+
+      - name: Copy pre-bundled JS to .app directory
         run: |
-          xcrun simctl list devices
-          xcrun simctl boot "iPhone 16 Pro" || true
+          APP_PATH="ios/build/Build/Products/Debug-iphonesimulator/HexSplash.app"
+          BUNDLE_SOURCE="dist/main.jsbundle"
+          BUNDLE_DEST="$APP_PATH/main.jsbundle"
+
+          # Verify source bundle exists
+          if [ ! -f "$BUNDLE_SOURCE" ]; then
+            echo "ERROR: Pre-bundled JS not found at $BUNDLE_SOURCE"
+            echo "Contents of dist/:"
+            ls -la dist/ || echo "Directory does not exist"
+            exit 1
+          fi
+
+          # Copy main bundle
+          echo "Copying main.jsbundle to .app..."
+          cp "$BUNDLE_SOURCE" "$BUNDLE_DEST"
+
+          # Copy assets preserving the structure expected by the bundle
+          # The bundler creates: dist/assets/assets/*, and the JS bundle expects: /assets/assets/*
+          # So we copy dist/assets/* to preserve the nested structure
+          echo "Copying assets to .app..."
+          if [ -d "dist/assets" ]; then
+            echo "Copying assets with nested structure..."
+            cp -R dist/assets/* "$APP_PATH/"
+          else
+            echo "ERROR: No assets directory found"
+            exit 1
+          fi
+
+          # Verify bundle was copied
+          if [ -f "$BUNDLE_DEST" ]; then
+            echo "JavaScript bundle successfully copied to $BUNDLE_DEST"
+            ls -lh "$BUNDLE_DEST"
+          else
+            echo "ERROR: Failed to copy bundle to $BUNDLE_DEST"
+            exit 1
+          fi
+
+          # Verify critical assets (fonts) were copied correctly
+          # The JS bundle expects fonts at: /assets/assets/fonts/
+          echo ""
+          echo "Verifying asset paths..."
+          if [ -f "$APP_PATH/assets/assets/fonts/SpaceMono-Regular.ttf" ]; then
+            echo "✓ SpaceMono font found at correct path (assets/assets/fonts/)"
+            ls -lh "$APP_PATH/assets/assets/fonts/SpaceMono-Regular.ttf"
+          else
+            echo "✗ ERROR: SpaceMono font NOT found at expected path!"
+            echo "Expected: $APP_PATH/assets/assets/fonts/SpaceMono-Regular.ttf"
+            echo ""
+            echo "Searching for font in .app bundle:"
+            find "$APP_PATH" -name "*SpaceMono*" -type f || echo "Font not found anywhere in bundle"
+            echo ""
+            echo "Asset directory structure:"
+            find "$APP_PATH/assets" -type f 2>/dev/null | head -20 || echo "No assets directory found"
+            exit 1
+          fi
+
+      - name: Cache Homebrew packages
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Caches/Homebrew
+          key: ${{ runner.os }}-brew-applesimutils-1.0
+          restore-keys: |
+            ${{ runner.os }}-brew-applesimutils-
 
       - name: Install applesimutils
-        run: brew tap wix/brew && brew install applesimutils
+        run: |
+          if ! command -v applesimutils &> /dev/null; then
+            brew tap wix/brew
+            brew install applesimutils
+          else
+            echo "applesimutils already installed"
+          fi
+
+      - name: Verify app bundle exists for Detox
+        run: |
+          APP_PATH="ios/build/Build/Products/Debug-iphonesimulator/HexSplash.app"
+
+          echo "Verifying app bundle for Detox..."
+          if [ ! -d "$APP_PATH" ]; then
+            echo "ERROR: App bundle not found at $APP_PATH"
+            echo ""
+            echo "Expected location: $APP_PATH"
+            echo "Current directory: $(pwd)"
+            echo ""
+            echo "Contents of ios/build/Build/Products/:"
+            ls -la ios/build/Build/Products/ || echo "Directory does not exist"
+            exit 1
+          fi
+
+          echo "✓ App bundle verified at: $APP_PATH"
+          echo ""
+          echo "App bundle contents:"
+          ls -lah "$APP_PATH" | head -20
+          echo ""
+          echo "Absolute path for Detox: $(cd "$(dirname "$APP_PATH")" && pwd)/$(basename "$APP_PATH")"
 
       - name: Run Detox iOS tests
+        timeout-minutes: 15
         run: |
-          npx detox test --configuration ios.sim.debug
+          # Run Detox with verbose logging for better error diagnosis
+          # Using debug level to capture detailed information about test failures
+          npx detox test --configuration ios.sim.debug --loglevel debug
 
       - name: Upload test artifacts
         if: failure()
@@ -76,87 +272,64 @@ jobs:
             e2e/artifacts/
           retention-days: 7
 
-
-# TODO: GET ANDROID INSTALLED / RUNNING FOR CI AFTER IOS 
+# TODO: GET ANDROID INSTALLED / RUNNING FOR CI AFTER IOS
   # Android Testing Job
   # android-test:
   #   name: Android Tests
   #   runs-on: ubuntu-latest
-
+  #
   #   steps:
   #     - name: Checkout code
   #       uses: actions/checkout@v4
-
+  #
   #     - name: Setup Node.js
   #       uses: actions/setup-node@v4
   #       with:
   #         node-version: '18'
   #         cache: 'npm'
-
+  #
   #     - name: Install dependencies
   #       run: npm ci
-
+  #
   #     - name: Setup Java
   #       uses: actions/setup-java@v4
   #       with:
   #         distribution: 'temurin'
   #         java-version: '17'
   #         cache: 'gradle'
-
+  #
+  #     - name: Cache Expo Prebuild
+  #       uses: actions/cache@v4
+  #       with:
+  #         path: |
+  #           android
+  #         key: ${{ runner.os }}-prebuild-android-${{ hashFiles('package-lock.json', 'app.json') }}
+  #
+  #     - name: Generate native directories
+  #       run: npx expo prebuild --platform android
+  #
   #     - name: Grant execute permission for gradlew
   #       run: chmod +x android/gradlew
-
-      # Uncomment when ready to build
-      # - name: Build Android app for testing
-      #   run: |
-      #     cd android
-      #     ./gradlew assembleDebug assembleAndroidTest -DtestBuildType=debug
-
-      # Uncomment when ready to run Detox tests
-      # - name: Setup Android Emulator
-      #   uses: ReactiveCircus/android-emulator-runner@v2
-      #   with:
-      #     api-level: 30
-      #     target: google_apis
-      #     arch: x86_64
-      #     profile: Pixel_3a
-      #     script: npx detox test --configuration android.emu.debug
-
-      # - name: Upload test artifacts
-      #   if: failure()
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: android-test-artifacts
-      #     path: |
-      #       e2e/artifacts/
-      #     retention-days: 7
-
-  # Lint and Unit Tests (can be uncommented when needed)
-  # lint-and-unit-test:
-  #   name: Lint & Unit Tests
-  #   runs-on: ubuntu-latest
   #
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
+  #     - name: Build Android app for testing
+  #       run: |
+  #         cd android
+  #         ./gradlew assembleDebug assembleAndroidTest
   #
-  #     - name: Setup Node.js
-  #       uses: actions/setup-node@v4
+  #     - name: Run Detox tests on Android Emulator
+  #       uses: ReactiveCircus/android-emulator-runner@v2
   #       with:
-  #         node-version: '18'
-  #         cache: 'npm'
+  #         api-level: 30
+  #         target: google_apis
+  #         arch: x86_64
+  #         profile: Pixel_3a
+  #         script: npx detox test --configuration android.emu.debug
   #
-  #     - name: Install dependencies
-  #       run: npm ci
-  #
-  #     - name: Run ESLint
-  #       run: npm run lint
-  #
-  #     - name: Run Jest unit tests
-  #       run: npm test -- --coverage --watchAll=false
-  #
-  #     - name: Upload coverage reports
-  #       uses: codecov/codecov-action@v4
+  #     - name: Upload test artifacts
+  #       if: failure()
+  #       uses: actions/upload-artifact@v4
   #       with:
-  #         files: ./coverage/lcov.info
-  #         flags: unittests
+  #         name: android-test-artifacts
+  #         path: |
+  #           e2e/artifacts/
+  #         retention-days: 7

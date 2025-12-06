@@ -29,6 +29,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Generate native directories
+        run: npx expo prebuild --clean
+
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
@@ -70,33 +73,35 @@ jobs:
       #       e2e/artifacts/
       #     retention-days: 7
 
+
+# TODO: GET ANDROID INSTALLED / RUNNING FOR CI AFTER IOS 
   # Android Testing Job
-  android-test:
-    name: Android Tests
-    runs-on: ubuntu-latest
+  # android-test:
+  #   name: Android Tests
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '18'
+  #         cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+  #     - name: Install dependencies
+  #       run: npm ci
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-          cache: 'gradle'
+  #     - name: Setup Java
+  #       uses: actions/setup-java@v4
+  #       with:
+  #         distribution: 'temurin'
+  #         java-version: '17'
+  #         cache: 'gradle'
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x android/gradlew
+  #     - name: Grant execute permission for gradlew
+  #       run: chmod +x android/gradlew
 
       # Uncomment when ready to build
       # - name: Build Android app for testing

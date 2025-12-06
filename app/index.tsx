@@ -31,7 +31,7 @@ const index = () => {
 		return null;
 	}
 	return (
-		<View style={styles.container}>
+		<View style={styles.container} testID="element-welcome-screen">
 			<StatusBar style="light" />
 			<LinearGradient
 				colors={["#F78FAD", "#A16BFE"]}
@@ -43,8 +43,10 @@ const index = () => {
 				<Text style={styles.subTextLogo}>for your design </Text>
 			</View>
 			<View style={{ flex: 1 }}></View>
+			{/* Todo: set up testID for get started button */}
 			<Pressable
 				style={styles.button}
+				testID="action-get-started"
 				onPress={() => router.replace("/generator")}
 			>
 				<Ionicons

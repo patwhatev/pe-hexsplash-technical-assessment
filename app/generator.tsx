@@ -37,10 +37,14 @@ const Generator = () => {
 	};
 
 	return (
-		<View style={styles.container}>
-			{colorCode.map((color, index) => (
-				<Pressable
+		// Note: Color cell container
+		<View style={styles.container} testID="element-palette-container">
+			{colorCode.map((color, index) => {
+				const colorCellTestID = `action-color-cell-${index}`;
+				// NOTE: this is the individual Color cell
+				return <Pressable
 					key={index}
+					testID={colorCellTestID}
 					onPress={() =>
 						locks[index]
 							? null
@@ -70,7 +74,7 @@ const Generator = () => {
 						/>
 					</Pressable>
 				</Pressable>
-			))}
+			})}
 			<View style={styles.buttonsContainer}>
 				<Pressable
 					onPress={() => {

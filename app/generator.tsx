@@ -86,6 +86,7 @@ const Generator = () => {
 			<View style={styles.buttonsContainer}>
 				{/* Note: info button / modal trigger */}
 				<Pressable
+					testID="action-view-info"
 					onPress={() => {
 						setModalVisible(true);
 					}}
@@ -101,7 +102,7 @@ const Generator = () => {
 					/>
 				</Pressable>
 				{/* Note: Settings button */}
-				<Pressable onPress={() => router.push("/settings")}>
+				<Pressable testID="action-view-settings" onPress={() => router.push("/settings")}>
 					<Ionicons
 						name="settings-outline"
 						color={"#000000"}
@@ -110,6 +111,7 @@ const Generator = () => {
 				</Pressable>
 				{/* Note: "Generate" (all unlocked colors) button */}
 				<Pressable
+					testID="action-generate-all"
 					style={styles.button}
 					onPress={generateRandomHexCodes}
 				>
@@ -118,6 +120,7 @@ const Generator = () => {
 
 				{/* Note: Unlock All button */}
 				<Pressable
+					testID="action-unlock-all"
 					onPress={() => {
 						setLocks([false]);
 					}}
@@ -130,6 +133,7 @@ const Generator = () => {
 				</Pressable>
 				{/* Note: Share button */}
 				<Pressable
+					testID="action-share-palette"
 					onPress={() => {
 						router.push({
 							pathname: "/sharepalette",

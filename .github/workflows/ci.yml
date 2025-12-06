@@ -1,0 +1,154 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  # iOS Testing Job
+  ios-test:
+    name: iOS Tests
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: ios
+
+      - name: Install CocoaPods dependencies
+        run: |
+          cd ios
+          pod install
+
+      # Uncomment when ready to build
+      # - name: Build iOS app for testing
+      #   run: |
+      #     xcodebuild -workspace ios/HexSplash.xcworkspace \
+      #       -scheme HexSplash \
+      #       -configuration Debug \
+      #       -sdk iphonesimulator \
+      #       -derivedDataPath ios/build \
+      #       build-for-testing
+
+      # Uncomment when ready to run Detox tests
+      # - name: Setup iOS Simulator
+      #   run: |
+      #     xcrun simctl list devices
+      #     xcrun simctl boot "iPhone 16 Pro" || true
+
+      # - name: Run Detox iOS tests
+      #   run: |
+      #     npx detox test --configuration ios.sim.debug
+
+      # - name: Upload test artifacts
+      #   if: failure()
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: ios-test-artifacts
+      #     path: |
+      #       e2e/artifacts/
+      #     retention-days: 7
+
+  # Android Testing Job
+  android-test:
+    name: Android Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x android/gradlew
+
+      # Uncomment when ready to build
+      # - name: Build Android app for testing
+      #   run: |
+      #     cd android
+      #     ./gradlew assembleDebug assembleAndroidTest -DtestBuildType=debug
+
+      # Uncomment when ready to run Detox tests
+      # - name: Setup Android Emulator
+      #   uses: ReactiveCircus/android-emulator-runner@v2
+      #   with:
+      #     api-level: 30
+      #     target: google_apis
+      #     arch: x86_64
+      #     profile: Pixel_3a
+      #     script: npx detox test --configuration android.emu.debug
+
+      # - name: Upload test artifacts
+      #   if: failure()
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: android-test-artifacts
+      #     path: |
+      #       e2e/artifacts/
+      #     retention-days: 7
+
+  # Lint and Unit Tests (can be uncommented when needed)
+  # lint-and-unit-test:
+  #   name: Lint & Unit Tests
+  #   runs-on: ubuntu-latest
+  #
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '18'
+  #         cache: 'npm'
+  #
+  #     - name: Install dependencies
+  #       run: npm ci
+  #
+  #     - name: Run ESLint
+  #       run: npm run lint
+  #
+  #     - name: Run Jest unit tests
+  #       run: npm test -- --coverage --watchAll=false
+  #
+  #     - name: Upload coverage reports
+  #       uses: codecov/codecov-action@v4
+  #       with:
+  #         files: ./coverage/lcov.info
+  #         flags: unittests

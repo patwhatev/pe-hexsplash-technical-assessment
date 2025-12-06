@@ -8,6 +8,26 @@ describe('Example', () => {
     await device.reloadReactNative();
   });
 
+// Naming Convention
+// testID="element-xxx"
+// testID="action-xxx"
+
+// Welcome Screen
+// testID="element-welcome-screen"
+// testID="action-get-started"
+
+// // Palette Screen
+// testID="element-palette-container"
+// testID=`action-color-cell-${index}`
+
+// Info Modal 
+
+
+// Share Screen
+
+
+// Settings Screen
+
   it('should have welcome screen with Get Started pressable elem', async () => {
     await expect(element(by.id('element-welcome-screen'))).toBeVisible();
     await expect(element(by.id('action-get-started'))).toBeVisible();

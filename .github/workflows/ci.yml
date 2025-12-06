@@ -45,33 +45,33 @@ jobs:
           pod install
 
       # Uncomment when ready to build
-      # - name: Build iOS app for testing
-      #   run: |
-      #     xcodebuild -workspace ios/HexSplash.xcworkspace \
-      #       -scheme HexSplash \
-      #       -configuration Debug \
-      #       -sdk iphonesimulator \
-      #       -derivedDataPath ios/build \
-      #       build-for-testing
+      - name: Build iOS app for testing
+        run: |
+          xcodebuild -workspace ios/HexSplash.xcworkspace \
+            -scheme HexSplash \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -derivedDataPath ios/build \
+            build-for-testing
 
       # Uncomment when ready to run Detox tests
-      # - name: Setup iOS Simulator
-      #   run: |
-      #     xcrun simctl list devices
-      #     xcrun simctl boot "iPhone 16 Pro" || true
+      - name: Setup iOS Simulator
+        run: |
+          xcrun simctl list devices
+          xcrun simctl boot "iPhone 16 Pro" || true
 
-      # - name: Run Detox iOS tests
-      #   run: |
-      #     npx detox test --configuration ios.sim.debug
+      - name: Run Detox iOS tests
+        run: |
+          npx detox test --configuration ios.sim.debug
 
-      # - name: Upload test artifacts
-      #   if: failure()
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: ios-test-artifacts
-      #     path: |
-      #       e2e/artifacts/
-      #     retention-days: 7
+      - name: Upload test artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-test-artifacts
+          path: |
+            e2e/artifacts/
+          retention-days: 7
 
 
 # TODO: GET ANDROID INSTALLED / RUNNING FOR CI AFTER IOS 

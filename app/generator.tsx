@@ -41,6 +41,9 @@ const Generator = () => {
 		<View style={styles.container} testID="element-palette-container">
 			{colorCode.map((color, index) => {
 				const colorCellTestID = `action-color-cell-${index}`;
+				const colorCellHexTextTestID = `action-color-cell-${index}-text`;
+				const colorCellLockIcon = `action-color-cell-${index}-lock-icon`;
+				
 				// NOTE: this is the individual Color cell
 				return <Pressable
 					key={index}
@@ -54,9 +57,12 @@ const Generator = () => {
 									return newColors;
 							  })
 					}
+					// Note: Background color of cell in palette
 					style={[styles.view, { backgroundColor: color }]}
 				>
-					<Text style={[styles.text, { color: isColorDark(color) ? "white" : "black" }]}>{color}</Text>
+					{/* Note: Color text */}
+					<Text testID={colorCellHexTextTestID} style={[styles.text, { color: isColorDark(color) ? "white" : "black" }]}>{color}</Text>
+					{/* Note: Lock icon container */}
 					<Pressable
 						style={styles.lockContainer}
 						onPress={() =>
@@ -67,7 +73,9 @@ const Generator = () => {
 							})
 						}
 					>
+						{/* Note: Lock Icon */}
 						<Ionicons
+							testID={colorCellLockIcon}
 							name={locks[index] ? "lock-closed" : "lock-open"}
 							color={isColorDark(color) ? "white" : "black"}
 							size={28}
@@ -76,6 +84,7 @@ const Generator = () => {
 				</Pressable>
 			})}
 			<View style={styles.buttonsContainer}>
+				{/* Note: info button / modal trigger */}
 				<Pressable
 					onPress={() => {
 						setModalVisible(true);
@@ -91,6 +100,7 @@ const Generator = () => {
 						size={28}
 					/>
 				</Pressable>
+				{/* Note: Settings button */}
 				<Pressable onPress={() => router.push("/settings")}>
 					<Ionicons
 						name="settings-outline"
@@ -98,6 +108,7 @@ const Generator = () => {
 						size={24}
 					/>
 				</Pressable>
+				{/* Note: "Generate" (all unlocked colors) button */}
 				<Pressable
 					style={styles.button}
 					onPress={generateRandomHexCodes}
@@ -105,6 +116,7 @@ const Generator = () => {
 					<Text style={styles.buttonText}>Generate</Text>
 				</Pressable>
 
+				{/* Note: Unlock All button */}
 				<Pressable
 					onPress={() => {
 						setLocks([false]);
@@ -116,6 +128,7 @@ const Generator = () => {
 						size={24}
 					/>
 				</Pressable>
+				{/* Note: Share button */}
 				<Pressable
 					onPress={() => {
 						router.push({

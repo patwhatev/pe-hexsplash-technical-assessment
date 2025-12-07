@@ -14,7 +14,11 @@
     "detox:test": "detox test --configuration ios.sim.debug"
   },
   "jest": {
-    "preset": "jest-expo"
+    "preset": "jest-expo",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/e2e/"
+    ]
   },
   "dependencies": {
     "@expo-google-fonts/merienda": "^0.2.3",
@@ -44,6 +48,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "@testing-library/react-native": "^13.3.3",
     "@types/react": "~18.2.45",
     "babel-plugin-module-resolver": "^5.0.2",
     "detox": "^20.46.0",

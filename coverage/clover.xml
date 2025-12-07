@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1765078701794" clover="3.2.0">
+  <project timestamp="1765078701794" name="All files">
+    <metrics statements="27" coveredstatements="23" conditionals="4" coveredconditionals="2" methods="6" coveredmethods="5" elements="37" coveredelements="30" complexity="0" loc="27" ncloc="27" packages="3" files="8" classes="8"/>
+    <package name="assets.images">
+      <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      <file name="BottomBar.png" path="/Users/kcirtapnamreve/Documents/DEV/pe-hexsplash-technical-assessment/assets/images/BottomBar.png">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="1" type="stmt"/>
+      </file>
+      <file name="ColorView.png" path="/Users/kcirtapnamreve/Documents/DEV/pe-hexsplash-technical-assessment/assets/images/ColorView.png">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="components">
+      <metrics statements="23" coveredstatements="19" conditionals="4" coveredconditionals="2" methods="6" coveredmethods="5"/>
+      <file name="InfoModal.tsx" path="/Users/kcirtapnamreve/Documents/DEV/pe-hexsplash-technical-assessment/components/InfoModal.tsx">
+        <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+        <line num="12" count="1" type="stmt"/>
+        <line num="13" count="14" type="stmt"/>
+        <line num="105" count="1" type="stmt"/>
+      </file>
+      <file name="IsColorDark.tsx" path="/Users/kcirtapnamreve/Documents/DEV/pe-hexsplash-technical-assessment/components/IsColorDark.tsx">
+        <metrics statements="8" coveredstatements="8" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+        <line num="5" count="1" type="stmt"/>
+        <line num="6" count="18" type="stmt"/>
+        <line num="7" count="18" type="stmt"/>
+        <line num="8" count="18" type="stmt"/>
+        <line num="9" count="18" type="stmt"/>
+        <line num="10" count="18" type="stmt"/>
+        <line num="11" count="18" type="stmt"/>
+        <line num="12" count="18" type="stmt"/>
+      </file>
+      <file name="StyledText.tsx" path="/Users/kcirtapnamreve/Documents/DEV/pe-hexsplash-technical-assessment/components/StyledText.tsx">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+        <line num="4" count="7" type="stmt"/>
+      </file>
+      <file name="Themed.tsx" path="/Users/kcirtapnamreve/Documents/DEV/pe-hexsplash-technical-assessment/components/Themed.tsx">
+        <metrics statements="11" coveredstatements="7" conditionals="4" coveredconditionals="2" methods="3" coveredmethods="2"/>
+        <line num="23" count="7" type="cond" truecount="1" falsecount="1"/>
+        <line num="24" count="7" type="stmt"/>
+        <line num="26" count="7" type="cond" truecount="1" falsecount="1"/>
+        <line num="27" count="0" type="stmt"/>
+        <line num="29" count="7" type="stmt"/>
+        <line num="34" count="7" type="stmt"/>
+        <line num="35" count="7" type="stmt"/>
+        <line num="37" count="7" type="stmt"/>
+        <line num="41" count="0" type="stmt"/>
+        <line num="42" count="0" type="stmt"/>
+        <line num="44" count="0" type="stmt"/>
+      </file>
+      <file name="useColorScheme.ts" path="/Users/kcirtapnamreve/Documents/DEV/pe-hexsplash-technical-assessment/components/useColorScheme.ts">
+        <metrics statements="0" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      </file>
+    </package>
+    <package name="constants">
+      <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      <file name="Colors.ts" path="/Users/kcirtapnamreve/Documents/DEV/pe-hexsplash-technical-assessment/constants/Colors.ts">
+        <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="2" type="stmt"/>
+        <line num="2" count="2" type="stmt"/>
+      </file>
+    </package>
+  </project>
+</coverage>

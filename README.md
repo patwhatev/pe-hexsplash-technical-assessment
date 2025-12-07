@@ -549,3 +549,9 @@ from https://github.com/ReactNativeNews/React-Native-Apps
 - Additional/Bonus work
 	- Using a CI tool for automation tests
 	- Give links to automation run via CI (either GH Actions or some other tool)
+
+
+## Post-assessment log
+1. Updated the tests to pass
+2. Fixed the e2e and unit test jobs in CI 
+3. Tested cacheing to see if successful pipeline times notably decrease

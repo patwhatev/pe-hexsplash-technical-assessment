@@ -100,6 +100,7 @@ jobs:
             ${{ runner.os }}-pods-
 
       - name: Install CocoaPods dependencies
+        if: steps.cache-pods.outputs.cache-hit != 'true'
         run: |
           cd ios
           pod install
@@ -259,9 +260,7 @@ jobs:
       - name: Run Detox iOS tests
         timeout-minutes: 15
         run: |
-          # Run Detox with verbose logging for better error diagnosis
-          # Using debug level to capture detailed information about test failures
-          npx detox test --configuration ios.sim.debug --loglevel debug
+          npx detox test --configuration ios.sim.debug
 
       - name: Upload test artifacts
         if: failure()
